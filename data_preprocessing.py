@@ -1,10 +1,6 @@
 import csv
 import datetime
 
-instances_number = 100
-data = []
-labels = []
-
 # Useful map between columns and numbers in the csv
 #DAY_DS : 2
 #DAY_WE_DS : 4
@@ -23,6 +19,8 @@ ASS_PARTNER_values = ['T\xc3\xa9l\xc3\xa9phonie', 'A D\xc3\xa9finir', 'Relation 
 ASS_POLE_values = ['SUPPORT', 'A DEFINIR', 'CLIENTS', 'ADMINISTRATIF', 'PERMANENCE', 'SANTE', 'HABITATION', 'AUTOMOBILE', 'CRISES', 'MEDICAL', 'LIFESTYLE', 'TRUCK', 'GENERIQUES', 'MECANICIEN', 'DIVERS', 'KPT', 'E/A MAJ', 'JURIDIQUE']
 ASS_COMENT = ['', 'Rattachement au P\xc3\xb4le Grand Compte']
 
+data = [[] for i in range(87)]
+labels = []
 
 print "Heure de debut : "+datetime.datetime.now().strftime("%I:%M")
 
@@ -32,12 +30,18 @@ with open('train_2011_2012.csv') as csv_file:
     reader = csv.reader(csv_file, delimiter=';',quotechar='"')
 
     for idx,row in enumerate(reader):
+        if (idx % 1000 == 0):
+            print idx
         if (idx==0):
             labels = row
         else:
-            if (not (row[17] in days_ds_possible_strings)):
-                days_ds_possible_strings.append(row[17])
+            for number,feature in enumerate(row):
+                if (not (feature in data[number])):
+                    data[number].append(feature)
 
-    print days_ds_possible_strings
+
+for idx,feature in enumerate(data):
+    if (feature.length==1):
+        print labels[idx]
 
 print "Heure de fin : "+datetime.datetime.now().strftime("%I:%M")
