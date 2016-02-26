@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+
 import csv
-import datetime
+from datetime import datetime
 import pandas as pd
 import numpy as np
 
@@ -17,6 +18,7 @@ import numpy as np
 
 #Possible values for string features
 string_features = {
+    'DAY_DS': ['DAY_DS'],
     'DAY_WE_DS': ['Dimanche', 'Lundi', 'Samedi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'],
     'ASS_ASSIGNEMNT': ['T\xc3\xa9l\xc3\xa9phonie', 'Finances PCX', 'RTC', 'Gestion Renault', 'Nuit', 'Gestion - Accueil Telephonique',
             'Regulation Medicale', 'Services', 'Tech. Total', 'Gestion Relation Clienteles', 'Crises', 'Japon', 'M\xc3\xa9dical',
@@ -36,12 +38,11 @@ string_features = {
 }
 
 # Numeric features
-numeric_features = ['CSPL_', ]
 data = [[] for i in range(87)]
 labels = []
 CHUNK_SIZE = 100
 
-beginning = datetime.datetime.now()
+beginning = datetime.now()
 
 # Récupérer les labels initiaux
 with open('train_slice.csv') as f:
@@ -57,16 +58,19 @@ for l in labels:
         expansed_labels.append(l)
 
 with open('train_tmp.csv', 'w') as f:
-    f.write(";".join(expansed_labels))
-    f.write("\n")
+    f.write(";".join(expansed_labels) + "\n")
 
     # Parcourir le fichier train_slice.csv et recopier les données dans le nouveau fichier
     with open('train_slice.csv') as csvfile:
         reader = csv.reader(csvfile, delimiter=';', quotechar='"')
 
-        for idx, row in enumerate(reader, 1):
+        for idx, row in enumerate(reader):
+            if idx == 0: # ignore first line (header)
+                continue
+
             if idx % CHUNK_SIZE == 0:
                 print("Ligne %d" % idx)
+
             r = []
             for i, l in enumerate(row):
                 if labels[i] in string_features.keys():
@@ -74,10 +78,10 @@ with open('train_tmp.csv', 'w') as f:
                         r.append("1" if k == l else "0")
                 else:
                     r.append(l)
-            f.write(";".join(r))
-            f.write("\n")
 
-end_expansion = datetime.datetime.now()
+            f.write(";".join(r) + "\n")
+
+end_expansion = datetime.now()
 
 # Nettoyage des données : remplacer les NULL par la moyenne de la colonne (pour les données numériques)
 with open('train_tmp.csv') as f:
@@ -93,7 +97,7 @@ with open('train_tmp.csv') as f:
 
     means = means / lines
 
-end_means = datetime.datetime.now()
+end_means = datetime.now()
 
 with open('train_tmp.csv') as f:
     # Affectation des moyennes aux valeurs NaN
@@ -101,11 +105,11 @@ with open('train_tmp.csv') as f:
     idx = 0
     for c in reader:
         print("Ecriture : bloc no. %d" % (idx))
-        idx += 1
         c.fillna(value=means)
-        c.to_csv('train_data.csv', sep=';', header=(idx==0), mode='a') # write header only for first chunk, and append results
+        c.to_csv('train_data.csv', sep=';', header=(idx==0), index=False, mode='a') # write header only for first chunk, and append results
+        idx += 1
 
-end_copying = datetime.datetime.now()
+end_copying = datetime.now()
 
 print("")
 print "Début : " + beginning.strftime("%H:%M")

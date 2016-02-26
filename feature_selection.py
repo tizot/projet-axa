@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
+
 import csv
+from datetime import datetime
+
 import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
+
 
 with open('train_data.csv') as f:
     reader = pd.read_csv(f, sep=';', iterator=True)
@@ -16,10 +21,18 @@ with open('train_data.csv') as f:
     while -1 in cols:
         cols.remove(-1)
 
+beginning = datetime.now()
+
 with open('train_data.csv') as f:
     reader = pd.read_csv(f, sep=';', usecols=cols)
 
     pca = PCA(10)
-    print(reader)
     data = pca.fit_transform(reader)
-    print(data.columns)
+    print(data)
+
+ending = datetime.now()
+
+print("")
+print "Début : " + beginning.strftime("%H:%M")
+print "Fin : " + ending.strftime("%H:%M")
+print "Durée totale : " + str(ending - beginning)
