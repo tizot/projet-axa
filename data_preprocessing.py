@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import csv
 import datetime
+import pandas as pd
 
 instances_number = 100
 data = []
@@ -37,16 +38,14 @@ string_features = {
     'ASS_COMENT': ['', 'Rattachement au P\xc3\xb4le Grand Compte'],
 }
 
+# Numeric features
+numeric_features = ['CSPL_', ]
 
 print "Heure de debut : "+datetime.datetime.now().strftime("%I:%M")
 
-days_ds_possible_strings = []
-
-
-
 # Récupérer les labels initiaux
 with open('train_2011_2012.csv') as f:
-    reader = csv.reader(f, delimiter=';',quotechar='"')
+    reader = csv.reader(f, delimiter=';', quotechar='"')
     labels = reader.next()
 
 # Créer un nouveau fichier et y placer les labels "expansés"
@@ -62,9 +61,11 @@ with open('train.csv', 'w') as f:
 
     # Parcourir le fichier train_2011_2012.csv et recopier les données dans le nouveau fichier
     with open('train_2011_2012.csv') as csvfile:
-        reader = csv.reader(csvfile, delimiter=';',quotechar='"')
+        reader = csv.reader(csvfile, delimiter=';', quotechar='"')
 
         for idx, row in enumerate(reader, 1):
+            if idx % 100000 == 0:
+                print("Ligne %d" % idx)
             r = []
             for i, l in enumerate(row):
                 if labels[i] in string_features.keys():
@@ -73,5 +74,11 @@ with open('train.csv', 'w') as f:
                 else:
                     r.append(l)
             f.write(";".join(r))
+
+# Nettoyage des données : remplacer les NULL par la moyenne de la colonne (pour les données numériques)
+with open('train.csv', 'w') as f:
+    data = pd.read_csv(f, sep=";", quotechar='"')
+    means = data.mean(numeric_only=True)
+    data.fillna(value=means)
 
 print "Heure de fin : "+datetime.datetime.now().strftime("%I:%M")
