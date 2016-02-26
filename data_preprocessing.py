@@ -39,12 +39,12 @@ string_features = {
 numeric_features = ['CSPL_', ]
 data = [[] for i in range(87)]
 labels = []
-CHUNK_SIZE = 10000
+CHUNK_SIZE = 100
 
 beginning = datetime.datetime.now()
 
 # Récupérer les labels initiaux
-with open('train_2011_2012.csv') as f:
+with open('train_slice.csv') as f:
     reader = csv.reader(f, delimiter=';', quotechar='"')
     labels = reader.next()
 
@@ -60,8 +60,8 @@ with open('train_tmp.csv', 'w') as f:
     f.write(";".join(expansed_labels))
     f.write("\n")
 
-    # Parcourir le fichier train_2011_2012.csv et recopier les données dans le nouveau fichier
-    with open('train_2011_2012.csv') as csvfile:
+    # Parcourir le fichier train_slice.csv et recopier les données dans le nouveau fichier
+    with open('train_slice.csv') as csvfile:
         reader = csv.reader(csvfile, delimiter=';', quotechar='"')
 
         for idx, row in enumerate(reader, 1):
