@@ -60,3 +60,12 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+#Data
+meteo/
+train_2011_2012.csv
+field_description.xlsx
+*.xlsx#
+
+#Custom
+*.pdf
