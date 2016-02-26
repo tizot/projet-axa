@@ -3,10 +3,6 @@ import csv
 import datetime
 import pandas as pd
 
-instances_number = 100
-data = []
-labels = []
-
 # Useful map between columns and numbers in the csv
 #DAY_DS : 2
 #DAY_WE_DS : 4
@@ -40,6 +36,8 @@ string_features = {
 
 # Numeric features
 numeric_features = ['CSPL_', ]
+data = [[] for i in range(87)]
+labels = []
 
 print "Heure de debut : "+datetime.datetime.now().strftime("%I:%M")
 
