@@ -41,7 +41,7 @@ data = [[] for i in range(87)]
 labels = []
 CHUNK_SIZE = 10000
 
-print "Heure de debut : "+datetime.datetime.now().strftime("%I:%M")
+beginning = datetime.datetime.now()
 
 # Récupérer les labels initiaux
 with open('train_2011_2012.csv') as f:
@@ -77,6 +77,8 @@ with open('train_tmp.csv', 'w') as f:
             f.write(";".join(r))
             f.write("\n")
 
+end_expansion = datetime.datetime.now()
+
 # Nettoyage des données : remplacer les NULL par la moyenne de la colonne (pour les données numériques)
 with open('train_tmp.csv') as f:
     # Calcul des moyennes des features numériques
@@ -91,6 +93,8 @@ with open('train_tmp.csv') as f:
 
     means = means / lines
 
+end_means = datetime.datetime.now()
+
 with open('train_tmp.csv') as f:
     # Affectation des moyennes aux valeurs NaN
     reader = pd.read_csv(f, sep=";", quotechar='"', iterator=True, chunksize=CHUNK_SIZE)
@@ -101,5 +105,11 @@ with open('train_tmp.csv') as f:
         c.fillna(value=means)
         c.to_csv('train_data.csv', sep=';', header=(idx==0), mode='a') # write header only for first chunk, and append results
 
+end_copying = datetime.datetime.now()
 
-print "Heure de fin : "+datetime.datetime.now().strftime("%I:%M")
+print("")
+print "Début : " + beginning.strftime("%H:%M")
+print "Fin de l'expansion des features : " + end_expansion.strftime("%H:%M") + " (durée : " + str(end_expansion - beginning) + ")"
+print "Fin du calcul des moyennes : " + end_means.strftime("%H:%M") + " (durée : " + str(end_means - end_expansion) + ")"
+print "Fin de la création du fichier data_train.csv : " + end_copying.strftime("%H:%M") + " (durée : " + str(end_copying - end_expansion) + ")"
+print "Durée totale : " + str(end_copying - beginning)
