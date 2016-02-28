@@ -45,7 +45,7 @@ CHUNK_SIZE = 100
 beginning = datetime.now()
 
 # Récupérer les labels initiaux
-with open('train_slice.csv') as f:
+with open('train_2011_2012.csv') as f:
     reader = csv.reader(f, delimiter=';', quotechar='"')
     labels = reader.next()
 
@@ -61,7 +61,7 @@ with open('train_tmp.csv', 'w') as f:
     f.write(";".join(expansed_labels) + "\n")
 
     # Parcourir le fichier train_slice.csv et recopier les données dans le nouveau fichier
-    with open('train_slice.csv') as csvfile:
+    with open('train_2011_2012.csv') as csvfile:
         reader = csv.reader(csvfile, delimiter=';', quotechar='"')
 
         for idx, row in enumerate(reader):

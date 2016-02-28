@@ -9,8 +9,8 @@ from sklearn.decomposition import PCA
 
 
 with open('train_data.csv') as f:
-    reader = pd.read_csv(f, sep=';', iterator=True)
-    values = reader.get_chunk(1).values[0]
+    reader = pd.read_csv(f, sep=';', iterator=True,engine='c',nrows=100)
+    values = reader.iloc[1]
     cols = [i for i in range(len(values))]
     # Remove non numeric columns
     for i, v in enumerate(values):
@@ -24,11 +24,13 @@ with open('train_data.csv') as f:
 beginning = datetime.now()
 
 with open('train_data.csv') as f:
-    reader = pd.read_csv(f, sep=';', usecols=cols)
+    reader = pd.read_csv(f, sep=';', usecols=cols,engine='c',nrows=100)
+    pca = PCA(10).fit(reader)
 
-    pca = PCA(10)
-    data = pca.fit_transform(reader)
-    print(data)
+with open('train_data.csv') as f:
+    reader = pd.read_csv(f, sep=';', usecols=cols,engine='c')
+    data = pca.transform(reader)
+
 
 ending = datetime.now()
 
