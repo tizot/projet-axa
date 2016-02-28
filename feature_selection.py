@@ -8,6 +8,33 @@ import numpy as np
 from sklearn.decomposition import PCA
 
 
+### Compute variances
+labels = []
+
+with open('train_2011_2012.csv') as csv_file:
+    reader = csv.reader(csv_file, delimiter=';', quotechar='"')
+
+    for idx, row in enumerate(reader):
+        if idx == 0:
+            means = np.zeros(row.shape[1])
+            variances = np.zeros(row.shape[1])
+        else:
+            for i, value in enumerate(row):
+                try:
+                    value = float(value)
+                    variances[i] = (idx-1)/float(idx)*variances[i] + value*value/float(idx)
+                    means[i] = (idx-1)/float(idx)*means[i] + value/float(idx)
+                except:
+                    variances[i] = (idx-1)/float(idx)*variances[i]
+                    means[i] = (idx-1)/float(idx)*means[i]
+
+    means = means * means
+    for i, m in enumerate(variances):
+        if (means[i] != 0):
+            variances[i] = (variances[i] - means[i])/means[i]
+
+
+### PCA
 with open('train_data.csv') as f:
     reader = pd.read_csv(f, sep=';', iterator=True)
     values = reader.get_chunk(1).values[0]
@@ -21,7 +48,7 @@ with open('train_data.csv') as f:
     while -1 in cols:
         cols.remove(-1)
 
-beginning = datetime.now()
+beginning_pca = datetime.now()
 
 with open('train_data.csv') as f:
     reader = pd.read_csv(f, sep=';', usecols=cols)
@@ -30,9 +57,9 @@ with open('train_data.csv') as f:
     data = pca.fit_transform(reader)
     print(data)
 
-ending = datetime.now()
+ending_pca = datetime.now()
 
 print("")
-print "Début : " + beginning.strftime("%H:%M")
-print "Fin : " + ending.strftime("%H:%M")
-print "Durée totale : " + str(ending - beginning)
+print "Début PCA : " + beginning_pca.strftime("%H:%M")
+print "Fin PCA : " + ending_pca.strftime("%H:%M")
+print "Durée totale PCA : " + str(ending_pca - beginning_pca)
