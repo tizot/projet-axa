@@ -7,37 +7,12 @@ import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
 
+FILE_PATH = 'train_data.csv'
 
-### Compute variances
-labels = []
-
-with open('train_2011_2012.csv') as csv_file:
-    reader = csv.reader(csv_file, delimiter=';', quotechar='"')
-
-    for idx, row in enumerate(reader):
-        if idx == 0:
-            means = np.zeros(row.shape[1])
-            variances = np.zeros(row.shape[1])
-        else:
-            for i, value in enumerate(row):
-                try:
-                    value = float(value)
-                    variances[i] = (idx-1)/float(idx)*variances[i] + value*value/float(idx)
-                    means[i] = (idx-1)/float(idx)*means[i] + value/float(idx)
-                except:
-                    variances[i] = (idx-1)/float(idx)*variances[i]
-                    means[i] = (idx-1)/float(idx)*means[i]
-
-    means = means * means
-    for i, m in enumerate(variances):
-        if (means[i] != 0):
-            variances[i] = (variances[i] - means[i])/means[i]
-
-
-### PCA
-with open('train_data.csv') as f:
-    reader = pd.read_csv(f, sep=';', iterator=True,engine='c',nrows=100)
-    values = reader.iloc[1]
+### Select numeric columns
+with open(FILE_PATH) as f:
+    reader = pd.read_csv(f, sep=';', nrows=1)
+    values = reader.iloc[0]
     cols = [i for i in range(len(values))]
     # Remove non numeric columns
     for i, v in enumerate(values):
@@ -48,14 +23,46 @@ with open('train_data.csv') as f:
     while -1 in cols:
         cols.remove(-1)
 
+
+### Compute variances
+beginning_var = datetime.now()
+
+labels = []
+means = np.zeros((1, len(cols)))
+variances = np.zeros((1, len(cols)))
+
+with open(FILE_PATH) as f:
+    reader = pd.read_csv(f, delimiter=';', quotechar='"', usecols=cols, iterator=True, chunksize=1)
+
+    l = 0 # count lines
+    for r in reader:
+        if l % 1000 == 0:
+            print("Ligne %d" % l)
+        variances += r.values[0] * r.values[0]
+        means += r.values[0]
+        l += 1
+
+    variances = 1.0 / l * variances - means * means
+
+    idx_features = np.argsort(variances)[0]
+    print(idx_features)
+
+ending_var = datetime.now()
+
+print("")
+print "Début Variances : " + beginning_var.strftime("%H:%M")
+print "Fin Variances : " + ending_var.strftime("%H:%M")
+print "Durée totale Variances : " + str(ending_var - beginning_var)
+
+### PCA
 beginning_pca = datetime.now()
 
-with open('train_data.csv') as f:
-    reader = pd.read_csv(f, sep=';', usecols=cols,engine='c',nrows=100)
+with open(FILE_PATH) as f:
+    reader = pd.read_csv(f, sep=';', usecols=cols, engine='c', nrows=100)
     pca = PCA(10).fit(reader)
 
-with open('train_data.csv') as f:
-    reader = pd.read_csv(f, sep=';', usecols=cols,engine='c')
+with open(FILE_PATH) as f:
+    reader = pd.read_csv(f, sep=';', usecols=cols, engine='c')
     data = pca.transform(reader)
 
 
