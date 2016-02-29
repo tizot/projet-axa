@@ -1,0 +1,32 @@
+\documentclass[a4paper,11pt,french]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{polytechnique}
+
+\title{AXA data challenge}
+\author{Basile \bsc{Bruneau}\\Camille \bsc{Masset}\\Denis \bsc{Merigoux}}
+
+\begin{document}
+    \maketitle
+
+    \section{Actions effectuées}
+
+    \subsection{Pre-processing}
+
+        Nous avons effectué les actions suivantes pour pre-processer les données :
+        \begin{itemize}
+            \item remplacer toutes les colonnes contenant des chaînes de caractère par autant de colonnes différentes que de chaînes de caractères possibles ;
+            \item remplacer les valeurs manquantes par la moyenne de tous les échantillons.
+        \end{itemize}
+
+    \subsection{Feature selection}
+        Très basique, elle consiste en les actions suivantes :
+        \begin{itemize}
+            \item sélectionner uniquement les colonnes \verb|Date|, \verb|WEEK_END| et \verb|DAYS_WE_DS| ;
+            \item calculer pour chaque combinaison de créneau horaire et d'\verb|ASS_ASSIGNMENT|, la somme des \verb|CSPL_RECEIVED_CALLS| associés.
+        \end{itemize}
+\end{document}
+
+\end{document}
