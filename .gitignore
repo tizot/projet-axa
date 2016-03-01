@@ -69,3 +69,9 @@ field_description.xlsx
 
 #Custom
 *.pdf
+
+#LaTeX
+*.aux
+*.fdb_latexmk
+*.fls
+*.synctex.gz
