@@ -9,7 +9,7 @@ import csv
 # - precipitation
 ###
 
-FILE_PATH = 'meteo/meteo_2011.csv'
+FILE_PATH = 'meteo/meteo_2012.csv'
 WRITE_PATH = 'meteo/meteo_means.csv'
 
 #Means are stored in this table. Every value is a table where :
@@ -22,27 +22,29 @@ with open(FILE_PATH) as f:
     counter = 0
     for row in reader:
         counter += 1
-        if (counter % 10 == 0):
+        if (counter % 100000 == 0):
             print "Ligne n°%d" % counter
-            break
         try:
             float(row[1])
-            dpt = row[1]
-            key = (dpt,row[0])
+            dpt = int(row[1])
+            key = row[0]
             if not (key in meteo_means.keys()):
-                meteo_means[key] = [0 for i in range(4)]
-            meteo_means[key][0] += 1
-            meteo_means[key][1] += (float(row[3])+float(row[4]))/2
-            meteo_means[key][2] += float(row[6])
-            meteo_means[key][3] += float(row[7])
+                meteo_means[key] = [0 for i in range(100)]
+            meteo_means[key][dpt] = [0 for i in range(4)]
+            meteo_means[key][dpt][0] += 1
+            meteo_means[key][dpt][1] += (float(row[3])+float(row[4]))/2
+            meteo_means[key][dpt][2] += float(row[6])
+            meteo_means[key][dpt][3] += float(row[7])
         except ValueError:
             a = 0
 
 with open(WRITE_PATH,'a') as g:
     for key in meteo_means.keys():
-        number_of_instances = meteo_means[key][0]
-        meteo_means[key] = [meteo_means[key][1]/number_of_instances,
-            meteo_means[key][2]/number_of_instances,
-            meteo_means[key][3]/number_of_instances]
+        for idx,dpt in enumerate(meteo_means[key]):
+            if (meteo_means[key][idx] != 0):
+                number_of_instances = meteo_means[key][idx][0]
+                meteo_means[key][idx] = [meteo_means[key][idx][1]/number_of_instances,
+                meteo_means[key][idx][2]/number_of_instances,
+                meteo_means[key][idx][3]/number_of_instances]
         writer = csv.writer(g)
         writer.writerow([key]+meteo_means[key])
