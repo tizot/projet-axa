@@ -2,7 +2,7 @@
 import csv
 import numpy as np
 from datetime import datetime
-from sklearn.linear_model import SGDRegressor
+from sklearn.linear_model import SGDRegressor, Lasso
 from sklearn.preprocessing import StandardScaler
 
 # pour chaque ligne, la première colonne est la date, puis si c'est un weekend,
@@ -52,15 +52,19 @@ with open('sums.csv') as f:
         for i in range(NB_ASS):
             y[idx+i] = row[9+i]
 
+# Sort X and y
+indexes = np.argsort(X, axis=1, kind='mergesort')
+X = X[indexes]
+y = y[indexes]
+
 # Train the estimator
+# clf = Lasso(alpha=0.1)
 clf = SGDRegressor(loss='squared_loss', shuffle=True, n_iter=100, alpha=0.0001)
 scaler = StandardScaler()
 scaler.fit(X)
 X = scaler.transform(X)
 clf.fit(X, y)
 
-# Construct X_test
-X_test = np.zeros((2*3*24 * NB_ASS, 5 + 7 + NB_ASS))
 with open('submission.txt') as f:
     reader = csv.reader(f, delimiter='\t')
     reader.next()
@@ -69,7 +73,11 @@ with open('submission.txt') as f:
     initial_date = datetime.strptime(initial_date_str, "%Y-%m-%d %H:%M:%S.000")
     current_date_str = initial_date_str
     current_date = initial_date
-    # Iterate until date changes
+    # Iterate while there is a line
+    # finished = False
+    # while not finished:
+        # Iterate until date changes
+    X_test = np.zeros((2*24 * NB_ASS, 5 + 7 + NB_ASS))
     idx = 0
     while initial_date.date() == current_date.date():
         # Date
@@ -86,10 +94,14 @@ with open('submission.txt') as f:
             X_test[idx, 12+i] = 1 if assignments[i] == current_line[1] else 0
 
         idx += 1
-        current_line = reader.next()
-        current_date_str = current_line[0]
-        current_date = datetime.strptime(current_date_str, "%Y-%m-%d %H:%M:%S.000")
+        try:
+            current_line = reader.next()
+            current_date_str = current_line[0]
+            current_date = datetime.strptime(current_date_str, "%Y-%m-%d %H:%M:%S.000")
+        except StopIteration:
+            finished = True
+            break
 
-X_test = scaler.transform(X_test)
-y_test = clf.predict(X_test)
-print (y_test)
+    X_test = scaler.transform(X_test)
+    y_test = clf.predict(X_test)
+    print (y_test)
