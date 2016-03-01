@@ -18,7 +18,7 @@ assignments = ['T\xc3\xa9l\xc3\xa9phonie', 'Finances PCX', 'RTC', 'Gestion Renau
         'Gestion DZ', 'NL M\xc3\xa9dical', 'M\xc3\xa9canicien', 'TAI - PANNE MECANIQUE', 'FO Remboursement', 'CMS',
         'Maroc - Renault', 'Divers', 'Prestataires', 'AEVA', 'Evenements', 'KPT', 'IPA Belgique - E/A MAJ', 'Juridique']
 
-DAYS_OF_WEEK_IDX = [0, 1, 6, 2, 3, 4, 5]
+DAYS_OF_WEEK_IDX = [0, 1, 3, 4, 5, 6, 2]
 DAYS_OF_WEEK = ['Dimanche', 'Lundi', 'Samedi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
 
 NB_ASS = len(assignments)
