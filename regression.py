@@ -3,6 +3,7 @@ import csv
 import numpy as np
 from datetime import datetime
 from sklearn.linear_model import SGDRegressor
+from sklearn.preprocessing import StandardScaler
 
 # pour chaque ligne, la première colonne est la date, puis si c'est un weekend,
 # puis les bool qui correspondent aux jours de la semaine
@@ -52,7 +53,10 @@ with open('sums.csv') as f:
             y[idx+i] = row[9+i]
 
 # Train the estimator
-clf = SGDRegressor(loss='squared_loss', shuffle=True, n_iter=5, alpha=0.0001)
+clf = SGDRegressor(loss='squared_loss', shuffle=True, n_iter=100, alpha=0.0001)
+scaler = StandardScaler()
+scaler.fit(X)
+X = scaler.transform(X)
 clf.fit(X, y)
 
 # Construct X_test
@@ -86,5 +90,6 @@ with open('submission.txt') as f:
         current_date_str = current_line[0]
         current_date = datetime.strptime(current_date_str, "%Y-%m-%d %H:%M:%S.000")
 
+X_test = scaler.transform(X_test)
 y_test = clf.predict(X_test)
 print (y_test)
