@@ -18,13 +18,13 @@ assignments = ['T\xc3\xa9l\xc3\xa9phonie', 'Finances PCX', 'RTC', 'Gestion Renau
         'Gestion DZ', 'NL M\xc3\xa9dical', 'M\xc3\xa9canicien', 'TAI - PANNE MECANIQUE', 'FO Remboursement', 'CMS',
         'Maroc - Renault', 'Divers', 'Prestataires', 'AEVA', 'Evenements', 'KPT', 'IPA Belgique - E/A MAJ', 'Juridique']
 
-DAYS_OF_WEEK_IDX = ['0', '1', '6', '2', '3', '4', '5']
+DAYS_OF_WEEK_IDX = [0, 1, 6, 2, 3, 4, 5]
 DAYS_OF_WEEK = ['Dimanche', 'Lundi', 'Samedi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
 
 NB_ASS = len(assignments)
 COL_1 = np.ones(NB_ASS)
 ID_ASS = np.identity(NB_ASS)
-NB_SLOTS = 41900
+NB_SLOTS = 41901
 
 # Construct X and y
 X = np.zeros((NB_SLOTS * NB_ASS, 5 + 7 + NB_ASS))
@@ -35,35 +35,45 @@ with open('sums.csv') as f:
     for idx, row in enumerate(reader):
         # Date
         d = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S.000")
-        X[idx:idx+NB_ASS, 0] = d.year * COL_1
-        X[idx:idx+NB_ASS, 1] = d.month * COL_1
-        X[idx:idx+NB_ASS, 2] = d.day * COL_1
-        X[idx:idx+NB_ASS, 3] = d.hour * COL_1
-        X[idx:idx+NB_ASS, 4] = d.minute * COL_1
+        X[idx*NB_ASS:(idx+1)*NB_ASS, 0] = d.year * COL_1
+        X[idx*NB_ASS:(idx+1)*NB_ASS, 1] = d.month * COL_1
+        X[idx*NB_ASS:(idx+1)*NB_ASS, 2] = d.day * COL_1
+        X[idx*NB_ASS:(idx+1)*NB_ASS, 3] = d.hour * COL_1
+        X[idx*NB_ASS:(idx+1)*NB_ASS, 4] = d.minute * COL_1
 
-        # Day of week (booleans)
+         # Day of week (booleans)
         for i in range(7):
-            X[idx:idx+NB_ASS, 5+i] = int(row[2+i]) * COL_1
+            X[idx*NB_ASS:(idx+1)*NB_ASS, 5+i] = int(row[2+i]) * COL_1
 
         # Which assignment?
-        X[idx:idx+NB_ASS, 12:12+NB_ASS] = ID_ASS
+        X[idx*NB_ASS:(idx+1)*NB_ASS, 12:12+NB_ASS] = ID_ASS
 
         # How many calls for this (date, assignment)?
         for i in range(NB_ASS):
-            y[idx+i] = row[9+i]
+            y[idx*NB_ASS+i] = row[9+i]
 
 # Sort X and y
-indexes = np.argsort(X, axis=1, kind='mergesort')
-X = X[indexes]
-y = y[indexes]
+# indexes = np.argsort(X, axis=1, kind='mergesort')
+# X = X[indexes]
+# y = y[indexes]
+
+# print X[3*10000]
+# print X[3*10001]
+# print X[3*10002]
+# print X[3*10003]
+# print y[3*10000]
+# print y[3*10001]
+# print y[3*10002]
+# print y[3*10003]
 
 # Train the estimator
 # clf = Lasso(alpha=0.1)
-clf = SGDRegressor(loss='squared_loss', shuffle=True, n_iter=100, alpha=0.0001)
+clf = SGDRegressor(loss='squared_loss', shuffle=True, n_iter=10, alpha=0.0001)
 scaler = StandardScaler()
 scaler.fit(X)
 X = scaler.transform(X)
 clf.fit(X, y)
+print "Fit end"
 
 with open('submission.txt') as f:
     reader = csv.reader(f, delimiter='\t')
@@ -104,4 +114,8 @@ with open('submission.txt') as f:
 
     X_test = scaler.transform(X_test)
     y_test = clf.predict(X_test)
+
+    for i in range(1037):
+        print y_test[i]
+
     print (y_test)
