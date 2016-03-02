@@ -29,7 +29,8 @@ cols_to_keep = [0,3]+range(4,11)
 with open(FILE_PATH) as f:
     reader = csv.reader(f,delimiter=';')
     reader.next()
-    current_slot = reader.next()[0]
+    current_row = reader.next()
+    current_slot = current_row[0]
     current_slot_sums = [0.0 for i in range(len(assignments))]
     counter = 0
     for row in reader:
@@ -42,6 +43,8 @@ with open(FILE_PATH) as f:
             else:
                 with open(WRITE_PATH,'a') as g:
                     writer = csv.writer(g)
-                    writer.writerow([row[x] for x in cols_to_keep]+current_slot_sums)
+                    writer.writerow([current_row[x] for x in cols_to_keep]+current_slot_sums)
                     current_slot_sums = [0.0 for i in range(len(assignments))]
+                    current_row = row
                     current_slot = row[0]
+                    current_slot_sums[assignments.index(row[18])] += float(row[125])
