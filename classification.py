@@ -5,6 +5,8 @@ from datetime import datetime, date
 from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
 
+from data_filler import raw_train_data
+
 # pour chaque ligne, la première colonne est la date, puis si c'est un weekend,
 # puis les bool qui correspondent aux jours de la semaine
 # pour chaque ASS_ASSIGNEMNT (cf. data_preprocessing), le nombre d'appels
@@ -27,40 +29,7 @@ ID_ASS = np.identity(NB_ASS)
 NB_SLOTS = 41901
 
 # Construct X_raw
-X_raw = np.zeros((NB_SLOTS * NB_ASS, 5 + 7 + NB_ASS + 1))
-
-print("Taille de X_raw : " + str(X_raw.shape))
-
-# Fill X_raw
-with open('sums.csv') as f:
-    reader = csv.reader(f)
-    print("Lecture du fichier CSV")
-
-    l = 0
-    for idx, row in enumerate(reader):
-        l += 1
-        # Date
-        d = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S.000")
-        X_raw[idx*NB_ASS:(idx+1)*NB_ASS, 0] = d.year * COL_1
-        X_raw[idx*NB_ASS:(idx+1)*NB_ASS, 1] = d.month * COL_1
-        X_raw[idx*NB_ASS:(idx+1)*NB_ASS, 2] = d.day * COL_1
-        X_raw[idx*NB_ASS:(idx+1)*NB_ASS, 3] = d.hour * COL_1
-        X_raw[idx*NB_ASS:(idx+1)*NB_ASS, 4] = d.minute * COL_1
-
-         # Day of week (booleans)
-        for i in range(7):
-            X_raw[idx*NB_ASS:(idx+1)*NB_ASS, 5+i] = int(row[2+i]) * COL_1
-
-        # Which assignment?
-        X_raw[idx*NB_ASS:(idx+1)*NB_ASS, 12:12+NB_ASS] = ID_ASS
-
-        # How many calls for this (date, assignment)?
-        for i in range(NB_ASS):
-            X_raw[idx*NB_ASS+i, -1] = row[9+i]
-
-    print("Nombre de lignes lues : %d" % l)
-
-print("")
+X_raw = raw_train_data()
 
 # Estimator
 clf = LinearSVC(C=1.0)
