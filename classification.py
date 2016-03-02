@@ -2,7 +2,7 @@
 import csv
 import numpy as np
 from datetime import datetime, date
-from sklearn.linear_model import SGDRegressor, Lasso
+from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
 
 # pour chaque ligne, la première colonne est la date, puis si c'est un weekend,
@@ -63,7 +63,7 @@ with open('sums.csv') as f:
 print("")
 
 # Estimator
-clf = SGDRegressor(loss='squared_loss', shuffle=True, n_iter=100, alpha=0.0001)
+clf = LinearSVC(C=1.0)
 scaler = StandardScaler()
 
 # Read submission.txt
@@ -128,6 +128,7 @@ with open('submission.txt') as f:
         X_train, y_train = X_train[:, :-1], X_train[:, -1]
 
         # Train clf with good data
+        print("Entrainement du classifieur")
         scaler.fit(X_train)
         X_train = scaler.transform(X_train)
         clf.fit(X_train, y_train)
