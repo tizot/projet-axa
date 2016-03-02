@@ -19,7 +19,7 @@ DAYS_OF_WEEK = ['Dimanche', 'Lundi', 'Samedi', 'Mardi', 'Mercredi', 'Jeudi', 'Ve
 NB_ASS = len(assignments)
 COL_1 = np.ones(NB_ASS)
 ID_ASS = np.identity(NB_ASS)
-NB_SLOTS = 41901
+NB_SLOTS = 39090 # estimation
 
 # Construct X_raw
 def raw_train_data(phone_datafile='sums.csv', weather_datafile='meteo_cleaned.csv'):
@@ -33,6 +33,7 @@ def raw_train_data(phone_datafile='sums.csv', weather_datafile='meteo_cleaned.cs
     with open(phone_datafile) as f:
         reader = csv.reader(f)
         print("Lecture du fichier CSV de données téléphoniques")
+        beginning_phone = datetime.now()
 
         l = 0
         for idx, row in enumerate(reader):
@@ -56,19 +57,28 @@ def raw_train_data(phone_datafile='sums.csv', weather_datafile='meteo_cleaned.cs
             for i in range(NB_ASS):
                 X_raw[idx*NB_ASS+i, -1] = row[9+i]
 
+        X_raw = X_raw[:l*NB_ASS, :]
+
         print("Nombre de lignes lues : %d" % l)
+        ending_phone = datetime.now()
+        print("    durée : " + str(ending_phone - beginning_phone))
 
     print("")
 
     # Fill weather data
     with open(weather_datafile) as f:
         print("Lecture du fichier CSV de données météo")
+        beginning_weather = datetime.now()
         X_weather = read_csv(f, sep=",", index_col=0, header=None, parse_dates=True)
 
-        for r in X_raw:
-            d = datetime(int(r[0]), int(r[1]), int(r[2]), int(r[3]))
+        for i in range(l):
+            d = datetime(int(X_raw[i*NB_ASS, 0]), int(X_raw[i*NB_ASS, 1]), int(X_raw[i*NB_ASS, 2]), int(X_raw[i*NB_ASS, 3]))
             if len(X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values) > 0:
-                r[12+NB_ASS:12+NB_ASS+282] = X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values[0]
+                data_weather = X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values[0]
+                X_raw[i*NB_ASS:(i+1)*NB_ASS, 12+NB_ASS:12+NB_ASS+282] = np.dot(COL_1.reshape((NB_ASS,1)), data_weather.reshape((1,282)))
+
+        ending_weather = datetime.now()
+        print("    durée : " + str(ending_weather - beginning_weather))
 
     print("")
 
@@ -79,9 +89,11 @@ def raw_train_data(phone_datafile='sums.csv', weather_datafile='meteo_cleaned.cs
     return X_raw, X_weather
 
 
-# Construct X_test
-def test_data(X_raw, X_weather, estimator, submission_file='submission.txt', scaler=None):
+# Construct X_test, train estimator and predict 
+def test_data(X_raw, X_weather, estimator, submission_file='submission.txt', scaler=None, output_file='output'):
     results = []
+
+    beginning_total = datetime.now()
 
     with open(submission_file) as f:
         reader = csv.reader(f, delimiter='\t')
@@ -99,6 +111,7 @@ def test_data(X_raw, X_weather, estimator, submission_file='submission.txt', sca
         while not finished:
             # Iterate until date changes
             print("Date : " + current_date_str)
+            beginning_date = datetime.now()
 
             X_test = np.zeros((2*24 * NB_ASS, 5 + 7 + NB_ASS + 282))
             # cols : year, month, day, hour, minute, day of week (7 booleans), assignments (NB_ASS booleans), 282 weather data
@@ -143,6 +156,8 @@ def test_data(X_raw, X_weather, estimator, submission_file='submission.txt', sca
             X_train = np.zeros(X_raw.shape)
             rr = 0
             for r in X_raw:
+                if r[0] == 0.0:
+                    continue
                 if date(int(r[0]), int(r[1]), int(r[2])) < current_date.date():
                     X_train[rr, :] = r
                     rr += 1
@@ -156,16 +171,32 @@ def test_data(X_raw, X_weather, estimator, submission_file='submission.txt', sca
                 X_train = scaler.transform(X_train)
                 X_test = scaler.transform(X_test)
 
+            beginning_training = datetime.now()
+            print("Début de l'entrainement")
             estimator.fit(X_train, y_train)
+            ending_training = datetime.now()
+
             y_test = estimator.predict(X_test)
+            ending_prediction = datetime.now()
+
             results.append(y_test)
 
             print("Taille de y_test : " + str(y_test.shape))
 
-            for i in range(y_test.shape[0]):
-                print(y_test[i])
+
+            with open(output_file, 'a') as of:
+                for i in range(y_test.shape[0]):
+                    print(y_test[i])
+                    of.write("%f\n" % i)
 
             print("")
+            print("Durée d'entrainement : " + str(ending_training - beginning_training))
+            print("Durée de prédiction : " + str(ending_prediction - ending_training))
+            print("Durée totale pour cette date : " + str(ending_prediction - beginning_date))
             initial_date = current_date
+
+        ending_total = datetime.now()
+
+        print("Durée totale pour toutes les dates : " + str(ending_total - beginning_total))
 
         return results

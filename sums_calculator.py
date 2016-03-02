@@ -7,7 +7,7 @@ import numpy as np
 
 ###
 # This functions takes pre-processed data, keeps only the relevant columns
-# and sums for each 30 min chunk all CSPL__RECEIVED_CALLS sorted by ASS_ASIGMENT
+# and sums for each 30 min chunk all CSPL_RECEIVED_CALLS sorted by ASS_ASIGMENT
 ###
 
 FILE_PATH = 'train_data.csv'
@@ -25,9 +25,8 @@ assignments = ['T\xc3\xa9l\xc3\xa9phonie', 'Finances PCX', 'RTC', 'Gestion Renau
 #0 : Date, 3 : Week-end, 4-10 : days of the week, 11 : night or day, 18 : ASS_ASIGMENT, 125 : CSPL_RECEIVED_CALLS
 cols_to_keep = [0,3]+range(4,11)
 
-### Select numeric columns
 with open(FILE_PATH) as f:
-    reader = csv.reader(f,delimiter=';')
+    reader = csv.reader(f, delimiter=';')
     reader.next()
     current_row = reader.next()
     current_slot = current_row[0]
@@ -41,7 +40,7 @@ with open(FILE_PATH) as f:
             if (row[0] == current_slot):
                 current_slot_sums[assignments.index(row[18])] += float(row[125])
             else:
-                with open(WRITE_PATH,'a') as g:
+                with open(WRITE_PATH, 'a') as g:
                     writer = csv.writer(g)
                     writer.writerow([current_row[x] for x in cols_to_keep]+current_slot_sums)
                     current_slot_sums = [0.0 for i in range(len(assignments))]

@@ -40,7 +40,7 @@ string_features = {
 # Numeric features
 data = [[] for i in range(87)]
 labels = []
-CHUNK_SIZE = 100
+CHUNK_SIZE = 1000
 
 beginning = datetime.now()
 
