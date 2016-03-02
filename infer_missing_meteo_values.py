@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-#
 
 import csv
+import datetime
 
 ###
 #This script takes a csv where each row is composed of :
@@ -68,5 +69,5 @@ for key in meteo_dict.keys():
 
 with open(WRITE_PATH,'a') as g:
     writer = csv.writer(g)
-    for key in meteo_dict.keys():
+    for key in sorted(meteo_dict, key=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M')):
         writer.writerow([key]+meteo_dict[key])

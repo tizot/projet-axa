@@ -21,8 +21,6 @@ assignments = ['T\xc3\xa9l\xc3\xa9phonie', 'Finances PCX', 'RTC', 'Gestion Renau
         'Gestion Clients', 'Manager', 'Tech. Axa', 'DOMISERVE', 'Truck Assistance', 'NL Technique', 'R\xc3\xa9ception', 'CAT',
         'Gestion DZ', 'NL M\xc3\xa9dical', 'M\xc3\xa9canicien', 'TAI - PANNE MECANIQUE', 'FO Remboursement', 'CMS',
         'Maroc - Renault', 'Divers', 'Prestataires', 'AEVA', 'Evenements', 'KPT', 'IPA Belgique - E/A MAJ', 'Juridique']
-out_of_france_assignemnts = ['Japon', 'Maroc - G\xc3\xa9n\xc3\xa9riques', 'Technique International', 'Maroc - Renault',
-    'IPA Belgique - E/A MAJ']
 
 #0 : Date, 3 : Week-end, 4-10 : days of the week, 11 : night or day, 18 : ASS_ASIGMENT, 125 : CSPL_RECEIVED_CALLS
 cols_to_keep = [0,3]+range(4,11)
@@ -38,7 +36,7 @@ with open(FILE_PATH) as f:
         counter += 1
         if (counter % 100000 == 0):
             print "Ligne n°%d" % counter
-        if (not(row[18] in out_of_france_assignemnts)):
+        if (row[16] != 'Entity1 France'):
             if (row[0] == current_slot):
                 current_slot_sums[assignments.index(row[18])] += float(row[125])
             else:
