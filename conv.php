@@ -6,7 +6,7 @@ $sub = explode("\n", file_get_contents('submission.txt'));
 $data2 = array();
 foreach($data as $d) {
     if (preg_match('#^[0-9.-]+#', $d)) {
-        $data2[] = max(0, floor(floatval($d)));
+        $data2[] = max(0, round(floatval($d)));
     }
 }
 

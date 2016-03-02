@@ -25,25 +25,24 @@ assignments = ['T\xc3\xa9l\xc3\xa9phonie', 'Finances PCX', 'RTC', 'Gestion Renau
 #0 : Date, 3 : Week-end, 4-10 : days of the week, 11 : night or day, 18 : ASS_ASIGMENT, 125 : CSPL_RECEIVED_CALLS
 cols_to_keep = [0,3]+range(4,11)
 
+sums = {}
+
+### Select numeric columns
 with open(FILE_PATH) as f:
     reader = csv.reader(f, delimiter=';')
     reader.next()
-    current_row = reader.next()
-    current_slot = current_row[0]
-    current_slot_sums = [0.0 for i in range(len(assignments))]
     counter = 0
     for row in reader:
         counter += 1
         if (counter % 100000 == 0):
             print "Ligne n°%d" % counter
-        if (row[16] != 'Entity1 France'):
-            if (row[0] == current_slot):
-                current_slot_sums[assignments.index(row[18])] += float(row[125])
-            else:
-                with open(WRITE_PATH, 'a') as g:
-                    writer = csv.writer(g)
-                    writer.writerow([current_row[x] for x in cols_to_keep]+current_slot_sums)
-                    current_slot_sums = [0.0 for i in range(len(assignments))]
-                    current_row = row
-                    current_slot = row[0]
-                    current_slot_sums[assignments.index(row[18])] += float(row[125])
+        if (row[16] == 'Entity1 France'):
+            if row[0] not in sums:
+                sums[row[0]] = [row[x] for x in cols_to_keep] + [0.0 for i in range(len(assignments))]
+            sums[row[0]][len(cols_to_keep) + assignments.index(row[18])] += float(row[125])
+
+with open(WRITE_PATH,'a') as g:
+    writer = csv.writer(g)
+    final_sums = sorted(sums.values(), key=lambda x: x[0])
+    for r in final_sums:
+        writer.writerow(r)
