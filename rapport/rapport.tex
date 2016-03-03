@@ -4,6 +4,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[french]{babel}
 \usepackage{polytechnique}
+\usepackage{booktabs}
 
 \title{AXA data challenge}
 \author{Basile \bsc{Bruneau}\\Camille \bsc{Masset}\\Denis \bsc{Merigoux}}
@@ -15,18 +16,51 @@
 
     \subsection{Pre-processing}
 
-        Nous avons effectué les actions suivantes pour pre-processer les données :
+        Nous avons effectué les actions suivantes pour pre-processer les données de \verb|train_2011_2012.csv| :
         \begin{itemize}
             \item remplacer toutes les colonnes contenant des chaînes de caractère par autant de colonnes différentes que de chaînes de caractères possibles ;
-            \item remplacer les valeurs manquantes par la moyenne de tous les échantillons.
-        \end{itemize}
-
-    \subsection{Feature selection}
-        Très basique, elle consiste en les actions suivantes :
-        \begin{itemize}
+            \item remplacer les valeurs manquantes par la moyenne de tous les échantillons ;
             \item sélectionner uniquement les colonnes \verb|Date|, \verb|WEEK_END| et \verb|DAYS_WE_DS| ;
+            \item ne garder que les lignes où $\verb|ASS_SOC_MERE|==\verb|'Entity1 France'|$ ;
             \item calculer pour chaque combinaison de créneau horaire et d'\verb|ASS_ASSIGNMENT|, la somme des \verb|CSPL_RECEIVED_CALLS| associés.
         \end{itemize}
-\end{document}
+        Pour les données météos, nous avons réorganisé le fichier CSV en donnant pour chaque créneau horaire la liste des \emph{features} météo dans chaque département. Les valeurs sont moyennées par département et par créneau horaire, et inféré les valeurs manquantes par moyennage.
 
+    \subsection{Feature selection}
+        Elle consiste en les actions suivantes :
+        \begin{itemize}
+            \item calcul des variances des colonnes (sauf la date) et choix des 30 variances les plus élevées ;
+            \item analyse PCA.
+        \end{itemize}
+
+    \subsection{Learning algorithm}
+
+    Pour effectuer nos prédictions et calculer un modèle, deux possibilités s'offraient à nous :
+    \begin{itemize}
+        \item effectuer une régression sur \verb|CSPL_RECEIVED_CALLS| ;
+        \item effectuer une classification sur les données, un label étant une valeur particulière de \verb|CSPL_RECEIVED_CALLS|.
+    \end{itemize}
+
+    \section{Organisation du code}
+
+    La plupart des scripts lisent des fichiers \verb|.csv| et écrivent d'autres fichier \verb|.csv|. On a le pipeline suivant :
+    \begin{itemize}
+        \item \verb|data_preprocessing.py| lit le fichier d'apprentissage \verb|train_2011_2012.csv| de l'énoncé du projet et réecrit un fichier \verb|train_data.csv| similaire dans lequel toutes les valeurs manquantes ont été remplacées par les moyennes ;
+        \item \verb|sums_calculator.py| lit \verb|train_data.csv|, aggrège les données par date et \verb|ASS_ASSIGNMENT| et les stocke dans \verb|sums.csv| ;
+        \item \verb|meteo_mean_calculator.py| agrège les données météo de \verb|meteo_2011.csv| et \verb|meteo_2012.csv| et les stocke dans \verb|meteo_means.csv| ;
+        \item \verb|infer_missing_meteo_values.py| lit \verb|meteo_means.csv|, remplace les valeurs manquantes par les moyenne et stocke les résultats dans \verb|meteo_cleaned.csv| ;
+        \item \verb|learning.csv| effectue de la \emph{5-fold cross-validation} sur plusieurs estimateurs et affiche les scores de précision ;
+        \item \verb|data_filler.csv| définit des fonctions permettant de calculer le modèle et de prédire les données manquantes de \verb|submission.txt|.
+    \end{itemize}
+
+    \section{Résultats}
+
+        Notre meilleur résultat a été obtenu sans les données météo et avec un \emph{Random Forest Classifier}. Voici les résultats de la \emph{cross-validation} :
+        \begin{center}
+            \begin{tabular}{c|ccccc}
+                Échantillon de test&1&2&3&4&5\\\hline
+                Score&$0.84404486$&$0.8495588$&$0.84760277$&$0.84870228$&$0.8481004$
+            \end{tabular}
+        \end{center}
+        La soumission associée nous a valu un score de $113.8$ sur le \emph{leaderboard}.
 \end{document}
