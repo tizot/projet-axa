@@ -3,6 +3,7 @@ import csv
 import numpy as np
 from datetime import datetime, date
 
+from sklearn import cross_validation
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import SGDRegressor, Lasso
 from sklearn.svm import LinearSVC
@@ -21,7 +22,7 @@ X_raw, X_weather = raw_train_data(phone_datafile='sums.csv', weather_datafile='m
 clf = DecisionTreeClassifier()
 scaler = StandardScaler()
 
-# Cross validation
+scores = cross_validation.cross_val_score(clf, X_raw[:, :-1], X_raw[:, -1], cv=5)
 
 # Predictions
-results = test_data(X_raw, X_weather, clf, submission_file='submission.txt', scaler=scaler, output_file='clf-tree')
+# results = test_data(X_raw, X_weather, clf, submission_file='submission.txt', scaler=scaler, output_file='clf-tree')
