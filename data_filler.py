@@ -19,12 +19,12 @@ DAYS_OF_WEEK = ['Dimanche', 'Lundi', 'Samedi', 'Mardi', 'Mercredi', 'Jeudi', 'Ve
 NB_ASS = len(assignments)
 COL_1 = np.ones(NB_ASS)
 ID_ASS = np.identity(NB_ASS)
-NB_SLOTS = 39090 # estimation
+NB_SLOTS = 33303 # estimation
 
 # Construct X_raw
 def raw_train_data(phone_datafile='sums.csv', weather_datafile='meteo_cleaned.csv'):
     beginning = datetime.now()
-    X_raw = np.zeros((NB_SLOTS * NB_ASS, 5 + 7 + NB_ASS + 282 + 1))
+    X_raw = np.zeros((NB_SLOTS * NB_ASS, 5 + 7 + NB_ASS + 1))
     # cols : year, month, day, hour, minute, day of week (7 booleans), assignments (NB_ASS booleans), 282 weather data, nb calls
 
     print("Taille de X_raw : " + str(X_raw.shape))
@@ -66,19 +66,19 @@ def raw_train_data(phone_datafile='sums.csv', weather_datafile='meteo_cleaned.cs
     print("")
 
     # Fill weather data
-    with open(weather_datafile) as f:
-        print("Lecture du fichier CSV de données météo")
-        beginning_weather = datetime.now()
-        X_weather = read_csv(f, sep=",", index_col=0, header=None, parse_dates=True)
-
-        for i in range(l):
-            d = datetime(int(X_raw[i*NB_ASS, 0]), int(X_raw[i*NB_ASS, 1]), int(X_raw[i*NB_ASS, 2]), int(X_raw[i*NB_ASS, 3]))
-            if len(X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values) > 0:
-                data_weather = X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values[0]
-                X_raw[i*NB_ASS:(i+1)*NB_ASS, 12+NB_ASS:12+NB_ASS+282] = np.dot(COL_1.reshape((NB_ASS,1)), data_weather.reshape((1,282)))
-
-        ending_weather = datetime.now()
-        print("    durée : " + str(ending_weather - beginning_weather))
+    # with open(weather_datafile) as f:
+    #     print("Lecture du fichier CSV de données météo")
+    #     beginning_weather = datetime.now()
+    #     X_weather = read_csv(f, sep=",", index_col=0, header=None, parse_dates=True)
+    #
+    #     for i in range(l):
+    #         d = datetime(int(X_raw[i*NB_ASS, 0]), int(X_raw[i*NB_ASS, 1]), int(X_raw[i*NB_ASS, 2]), int(X_raw[i*NB_ASS, 3]))
+    #         if len(X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values) > 0:
+    #             data_weather = X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values[0]
+    #             X_raw[i*NB_ASS:(i+1)*NB_ASS, 12+NB_ASS:12+NB_ASS+282] = np.dot(COL_1.reshape((NB_ASS,1)), data_weather.reshape((1,282)))
+    #
+    #     ending_weather = datetime.now()
+    #     print("    durée : " + str(ending_weather - beginning_weather))
 
     print("")
 
@@ -86,11 +86,11 @@ def raw_train_data(phone_datafile='sums.csv', weather_datafile='meteo_cleaned.cs
     print("Durée de chargement des données d'entrainement : " + str(ending-beginning))
     print("")
 
-    return X_raw, X_weather
+    return X_raw
 
 
-# Construct X_test, train estimator and predict 
-def test_data(X_raw, X_weather, estimator, submission_file='submission.txt', scaler=None, output_file='output'):
+# Construct X_test, train estimator and predict
+def test_data(X_raw, estimator, submission_file='submission.txt', scaler=None, output_file='output'):
     results = []
 
     beginning_total = datetime.now()
@@ -113,7 +113,7 @@ def test_data(X_raw, X_weather, estimator, submission_file='submission.txt', sca
             print("Date : " + current_date_str)
             beginning_date = datetime.now()
 
-            X_test = np.zeros((2*24 * NB_ASS, 5 + 7 + NB_ASS + 282))
+            X_test = np.zeros((2*24 * NB_ASS, 5 + 7 + NB_ASS))
             # cols : year, month, day, hour, minute, day of week (7 booleans), assignments (NB_ASS booleans), 282 weather data
 
             idx = 0
@@ -147,10 +147,10 @@ def test_data(X_raw, X_weather, estimator, submission_file='submission.txt', sca
             print("Taille de X_test : " + str(X_test.shape))
 
             # Add weather data
-            for r in X_test:
-                d = datetime(int(r[0]), int(r[1]), int(r[2]), int(r[3]))
-                if len(X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values) > 0:
-                    r[12+NB_ASS:12+NB_ASS+282] = X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values[0]
+            # for r in X_test:
+            #     d = datetime(int(r[0]), int(r[1]), int(r[2]), int(r[3]))
+            #     if len(X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values) > 0:
+            #         r[12+NB_ASS:12+NB_ASS+282] = X_weather[d.strftime("%Y-%m-%d %H:%M:%S")].values[0]
 
             # Select training data from X_raw
             X_train = np.zeros(X_raw.shape)
