@@ -38,8 +38,13 @@
     Pour effectuer nos prédictions et calculer un modèle, deux possibilités s'offraient à nous :
     \begin{itemize}
         \item effectuer une régression sur \verb|CSPL_RECEIVED_CALLS| ;
-        \item effectuer une classification sur les données, un label étant une valeur particulière de \verb|CSPL_RECEIVED_CALLS|.
+        \item effectuer une classification sur les données, un label étant une valeur de \verb|CSPL_RECEIVED_CALLS|.
     \end{itemize}
+    Nous discuterons de ces deux possibilités dans la section \ref{discussion}.
+
+    \subsection{Prédiction}
+
+    Nous avons regroupé les lignes du fichier \verb|submission.txt| par dates et pour chacune de ces dates, nous réalisons un apprentissage sur les données passées et utilisons le modèle obtenu pour réaliser les prédictions.
 
     \section{Organisation du code}
 
@@ -54,13 +59,54 @@
     \end{itemize}
 
     \section{Résultats}
-
-        Notre meilleur résultat a été obtenu sans les données météo et avec un \emph{Random Forest Classifier}. Voici les résultats de la \emph{cross-validation} :
+    \label{discussion}
+    \paragraph{Final} Notre meilleur résultat a été obtenu sans les données météo et avec un \emph{Random Forest Classifier}. Voici les résultats de la \emph{cross-validation} :
         \begin{center}
             \begin{tabular}{c|ccccc}
                 Échantillon de test&1&2&3&4&5\\\hline
                 Score&$0.84404486$&$0.8495588$&$0.84760277$&$0.84870228$&$0.8481004$
             \end{tabular}
         \end{center}
-        La soumission associée nous a valu un score de $113.8$ sur le \emph{leaderboard}.
+        La soumission associée nous a valu un score de $113.8$ sur le \emph{leaderboard}. Voici la sortie de notre script de prédiction :
+    \begin{verbatim}
+Taille de X_raw : (1831665, 68)
+Lecture du fichier CSV de données téléphoniques
+Nombre de lignes lues : 33303
+durée : 0:00:03.190759
+
+Durée de chargement des données d'entrainement : 0:00:03.190831
+
+Lecture du fichier submission.txt
+Date : 2012-01-03 00:00:00.000
+aille de X_test : (1037, 67)
+Début de l'entrainement
+Taille de y_test : (1037,)
+0.0
+1.0
+0.0
+0.0
+0.0
+0.0
+0.0
+5.0
+...
+0.0
+0.0
+
+Durée d'entrainement : 0:01:39.133896
+Durée de prédiction : 0:00:00.082513
+Durée totale pour cette date : 0:01:44.257681
+Date : 2012-02-08 00:00:00.000
+Taille de X_test : (1115, 67)
+Début de l'entrainement
+Taille de y_test : (1115,)
+0.0
+0.0
+...
+    \end{verbatim}
+    On peut voir que le calcul est assez rapide, prenant 30 secondes au total pour faire toutes les prédictions
+
+    \paragraph{Essais : regression} Nous avons d'abord essayé de faire une régression (par descente de gradient par exemple) sur les données téléphoniques uniquement, puis en rajoutant la météo. Cette métthode n'a pas été concluante car les prédictions ne tenaient pas compte du cycle jour/nuit, prenaient des valeurs négatives et souvaent trop élevées. La cross-validation donnait alors des valeurs abérrantes.
+
+    \paragraph{Essais : classification} Nous avons ensuite tenté de faire de la classification avec les données météo et téléphoniques. Néanmoins, en présence des données météo les prédictions étaient toujours aberrantes, donnant un nombre d'appel constant quelque soit la date et l'heure en fonction des départements. Nous avons donc retiré les données météo et après plusieurs essais de classifieurs, avons obtenu notre meilleur résultat avec le \emph{Random Forest Classifier}.
 \end{document}
